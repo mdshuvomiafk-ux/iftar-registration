@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iftar Registration</title>
+</head>
+<body>
+    <h1>Iftar Registration Form</h1>
+    <form id="registrationForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+
+        <label for="contact">Contact Number:</label>
+        <input type="tel" id="contact" required>
+
+        <label for="payment">Bkash Payment Info:</label>
+        <input type="text" id="payment" placeholder="Enter Bkash number" required>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <h2>Registered Participants</h2>
+    <table id="registrationTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Contact Number</th>
+                <th>Bkash Payment Info</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Registration data will be populated here -->
+        </tbody>
+    </table>
+
+    <button id="exportBtn">Export to CSV</button>
+
+    <script>
+        document.getElementById('registrationForm').onsubmit = function (e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const contact = document.getElementById('contact').value;
+            const payment = document.getElementById('payment').value;
+
+            const table = document.getElementById('registrationTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.innerHTML = `<td>${name}</td><td>${contact}</td><td>${payment}</td>`;
+        };
+
+        document.getElementById('exportBtn').onclick = function () {
+            const table = document.getElementById('registrationTable');
+            let csv = [];
+            for (let row of table.rows) {
+                let cols = Array.from(row.cells).map(cell => cell.innerText);
+                csv.push(cols.join(","));
+            }
+            const csvString = csv.join("\n");
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'iftar_registration.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+    </script>
+</body>
+</html>
