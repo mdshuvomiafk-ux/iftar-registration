@@ -3,20 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ইফতার রেজিস্ট্রেশন ফর্ম</title>
+    <title>দরকারি ইফতার রেজিস্ট্রেশন ফর্ম</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
     <h1>ইফতার রেজিস্ট্রেশন ফর্ম</h1>
-    <form action="/submit" method="post">
-        <label for="name">নাম:</label><br>
-        <input type="text" id="name" name="name"><br>
-        <label for="email">ইমেইল:</label><br>
-        <input type="email" id="email" name="email"><br>
-        <label for="phone">ফোন নম্বর:</label><br>
-        <input type="text" id="phone" name="phone"><br>
-        <label for="num_guests">অতিথি সংখ্যা:</label><br>
-        <input type="number" id="num_guests" name="num_guests"><br><br>
-        <input type="submit" value="জমা দিন">
+    <form id="iftarForm">
+        <label for="name">নাম:</label>
+        <input type="text" id="name" required><br><br>
+        <label for="phone">ফোন নম্বর:</label>
+        <input type="tel" id="phone" required><br><br>
+        <label for="email">ইমেইল:</label>
+        <input type="email" id="email" required><br><br>
+        <button type="submit">রেজিস্টার করুন</button>
     </form>
+    <h2>রেজিস্ট্রেশন তালিকা</h2>
+    <table id="registrationTable">
+        <thead>
+            <tr>
+                <th>নাম</th>
+                <th>ফোন নম্বর</th>
+                <th>ইমেইল</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated here -->
+        </tbody>
+    </table>
+    <button id="exportBtn" class="hidden">CSV তে রপ্তানি করুন</button>
+    <script>
+        const form = document.getElementById('iftarForm');
+        const registrationTable = document.getElementById('registrationTable').getElementsByTagName('tbody')[0];
+        const exportBtn = document.getElementById('exportBtn');
+
+        // Load data from localStorage
+        window.onload = function() {
+            const registrations = JSON.parse(localStorage.getItem('registrations')) || [];
+            registrations.forEach(addRow);
+            if (registrations.length > 0) exportBtn.classList.remove('hidden');
+        };
+
+        form.onsubmit = function(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            addRow({ name, phone, email });
+            saveToLocalStorage({ name, phone, email });
+            form.reset();
+        };
+
+        function addRow(data) {
+            const row = registrationTable.insertRow();
+            row.insertCell(0).innerText = data.name;
+            row.insertCell(1).innerText = data.phone;
+            row.insertCell(2).innerText = data.email;
+            exportBtn.classList.remove('hidden');
+        }
+
+        function saveToLocalStorage(data) {
+            const registrations = JSON.parse(localStorage.getItem('registrations')) || [];
+            registrations.push(data);
+            localStorage.setItem('registrations', JSON.stringify(registrations));
+        }
+
+        exportBtn.onclick = function() {
+            const registrations = JSON.parse(localStorage.getItem('registrations')) || [];
+            let csvContent = 'data:text/csv;charset=utf-8,';
+            csvContent += 'নাম,ফোন নম্বর,ইমেইল\n';
+            registrations.forEach(reg => {
+                csvContent += `${reg.name},${reg.phone},${reg.email}\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'registrations.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+    </script>
 </body>
 </html>
